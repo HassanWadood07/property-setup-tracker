@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Property Setup &amp; Procurement Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0E2038;
+    --navy-2:#15304F;
+    --navy-3:#1C3C61;
+    --paper:#F6F2E9;
+    --paper-line:#E4DCC9;
+    --ink:#1B1F27;
+    --muted:#5B6472;
+    --amber:#D98E2B;
+    --amber-ink:#5C3B0C;
+    --green:#3F7D58;
+    --green-bg:#E4EFE7;
+    --red:#B23A2E;
+    --red-bg:#F5E4E1;
+    --line:rgba(255,255,255,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--navy);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    font-family:'Space Grotesk', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding:28px 20px 60px;
+  }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .wrap{ max-width:1080px; margin:0 auto; }
+
+  /* Header / hero */
+  header.strap{
+    background:linear-gradient(180deg, var(--navy-3), var(--navy-2));
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:2px;
+    padding:26px 28px 22px;
+    color:#EDEFF3;
+    position:relative;
+    overflow:hidden;
+  }
+  header.strap::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:4px;
+    background:repeating-linear-gradient(90deg, var(--amber) 0 18px, transparent 18px 30px);
+  }
+  .strap-top{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;
+  }
+  .kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; letter-spacing:0.02em; color:#B9C6D6; margin:0 0 6px;
+  }
+  h1{
+    margin:0; font-size:28px; font-weight:600; letter-spacing:-0.01em;
+  }
+  .addr{ margin:4px 0 0; color:#C6D0DD; font-size:14.5px; }
+  .status-pill{
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    border:1px solid rgba(255,255,255,0.35); border-radius:20px;
+    padding:5px 12px; color:#EDEFF3; white-space:nowrap;
+  }
+  .stat-row{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    margin-top:22px; background:rgba(255,255,255,0.14);
+    border:1px solid rgba(255,255,255,0.14); border-radius:2px; overflow:hidden;
+  }
+  .stat{ background:var(--navy-2); padding:14px 16px; }
+  .stat .num{ font-size:26px; font-weight:700; line-height:1; color:#fff; }
+  .stat .num.amber{ color:var(--amber); }
+  .stat .num.green{ color:#7BC79A; }
+  .stat .lbl{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:#AEB9C7; margin-top:6px; }
+
+  /* Tabs */
+  nav.tabs{
+    display:flex; gap:6px; margin:22px 0 0; flex-wrap:wrap;
+  }
+  nav.tabs button{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:14px;
+    background:var(--navy-2); color:#CBD5E1; border:1px solid rgba(255,255,255,0.14);
+    border-bottom:none; padding:11px 18px 9px; border-radius:6px 6px 0 0; cursor:pointer;
+    position:relative; top:1px;
+  }
+  nav.tabs button.active{
+    background:var(--paper); color:var(--ink); border-color:var(--paper-line);
+  }
+  nav.tabs button:not(.active):hover{ background:var(--navy-3); color:#fff; }
+
+  main.panel{
+    background:var(--paper); border:1px solid var(--paper-line); border-radius:0 6px 6px 6px;
+    padding:26px 28px 30px; min-height:420px;
+  }
+  section{ display:none; }
+  section.active{ display:block; }
+
+  .panel-head{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;
+    border-bottom:2px solid var(--ink); padding-bottom:12px; margin-bottom:18px;
+  }
+  .panel-head h2{ margin:0; font-size:20px; font-weight:600; }
+  .panel-head p{ margin:4px 0 0; color:var(--muted); font-size:13.5px; max-width:520px; }
+
+  select, input[type=text], input[type=number], input[type=date], input[type=url]{
+    font-family:'IBM Plex Mono', monospace; font-size:13px;
+    border:1px solid #C9C0A9; background:#FFFDF8; border-radius:3px;
+    padding:7px 8px; color:var(--ink); width:100%;
+  }
+  input:focus, select:focus{ outline:2px solid var(--amber); outline-offset:1px; }
+
+  .btn{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; font-weight:500;
+    background:var(--ink); color:#F6F2E9; border:none; border-radius:3px;
+    padding:9px 14px; cursor:pointer;
+  }
+  .btn:hover{ background:#333a45; }
+  .btn.ghost{ background:transparent; color:var(--muted); border:1px solid #C9C0A9; }
+  .btn.ghost:hover{ color:var(--ink); border-color:var(--ink); }
+  .btn.small{ padding:5px 9px; font-size:11.5px; }
+  .btn.danger{ background:transparent; color:var(--red); border:1px solid var(--red); }
+  .btn.danger:hover{ background:var(--red-bg); }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:0.04em; color:var(--muted); text-align:left; font-weight:500;
+    border-bottom:1px solid var(--ink); padding:8px 8px;
+  }
+  td{ padding:9px 8px; border-bottom:1px solid var(--paper-line); vertical-align:middle; }
+  tr:hover td{ background:rgba(217,142,43,0.06); }
+
+  .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; padding:3px 8px;
+    border-radius:20px; display:inline-block; white-space:nowrap;
+  }
+  .tag.ordered{ background:#E9EDF3; color:#2C4A6E; }
+  .tag.transit{ background:#FBF0DC; color:var(--amber-ink); }
+  .tag.delivered{ background:var(--green-bg); color:var(--green); }
+  .tag.issue{ background:var(--red-bg); color:var(--red); }
+  .tag.missing{ background:var(--red-bg); color:var(--red); }
+  .tag.ok{ background:var(--green-bg); color:var(--green); }
+  .tag.worn{ background:#FBF0DC; color:var(--amber-ink); }
+
+  .add-row{
+    display:grid; gap:8px; margin-bottom:16px; padding:14px; background:#FFFDF8;
+    border:1px dashed #C9C0A9; border-radius:4px;
+  }
+  .add-row .fields{ display:grid; gap:8px; }
+  .add-row .fields.inspection{ grid-template-columns:1.1fr 1.4fr 0.7fr 0.9fr 1.4fr; }
+  .add-row .fields.tier{ grid-template-columns:1.6fr 0.6fr 0.8fr 1.4fr; }
+  .add-row .fields.order{ grid-template-columns:1.3fr 1fr 0.9fr 0.8fr 1fr; }
+  .add-row .fields.portfolio{ grid-template-columns:1.3fr 1fr 0.9fr 1.5fr; }
+  .add-row .actions{ display:flex; justify-content:flex-end; }
+  label.f{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--muted); display:block; margin-bottom:3px; }
+
+  .subtabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .subtabs button{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; padding:7px 13px;
+    border:1px solid var(--ink); background:transparent; color:var(--ink); border-radius:20px; cursor:pointer;
+  }
+  .subtabs button.active{ background:var(--ink); color:var(--paper); }
+
+  .budget-bar{ height:8px; background:#E4DCC9; border-radius:4px; overflow:hidden; margin-top:6px;}
+  .budget-bar-fill{ height:100%; background:var(--amber); }
+  .budget-bar-fill.over{ background:var(--red); }
+  .tier-summary{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--muted); }
+  .tier-summary strong{ color:var(--ink); font-size:15px; }
+
+  .empty{ padding:26px; text-align:center; color:var(--muted); font-family:'IBM Plex Mono', monospace; font-size:12.5px; border:1px dashed #C9C0A9; border-radius:4px; }
+
+  .icon-btn{ background:none; border:none; cursor:pointer; color:var(--muted); font-size:14px; padding:2px 6px; }
+  .icon-btn:hover{ color:var(--red); }
+
+  footer{ max-width:1080px; margin:22px auto 0; text-align:center; color:#8FA0B5; font-family:'IBM Plex Mono', monospace; font-size:11.5px; }
+
+  @media (max-width:720px){
+    .stat-row{ grid-template-columns:repeat(2,1fr); }
+    .add-row .fields.inspection, .add-row .fields.tier, .add-row .fields.order, .add-row .fields.portfolio{ grid-template-columns:1fr; }
+    table, thead, tbody, th, td, tr{ display:block; }
+    thead{ display:none; }
+    td{ border-bottom:none; padding:4px 4px; }
+    tr{ border-bottom:1px solid var(--paper-line); padding:8px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="strap">
+    <div class="strap-top">
+      <div>
+        <p class="kicker">SETUP &amp; INSPECTION COORDINATOR — WORKING FILE</p>
+        <h1 id="propName">1420 Cascade Ridge Dr</h1>
+        <p class="addr" id="propAddr">Bend, OR &middot; 4BR / 3BA / Sleeps 10 &middot; New listing setup</p>
+      </div>
+      <span class="status-pill" id="launchPill">— days to launch</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="num amber" id="statDays">—</div><div class="lbl">DAYS TO LAUNCH</div></div>
+      <div class="stat"><div class="num" id="statBudget">—</div><div class="lbl">PLAN BUDGET USED</div></div>
+      <div class="stat"><div class="num green" id="statDelivered">—</div><div class="lbl">ORDERS DELIVERED</div></div>
+      <div class="stat"><div class="num" id="statFlags">—</div><div class="lbl">OPEN PORTFOLIO FLAGS</div></div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabNav"></nav>
+  <main class="panel">
+
+    <!-- INSPECTION -->
+    <section id="tab-inspection">
+      <div class="panel-head">
+        <div>
+          <h2>Property Inspection Workbook</h2>
+          <p>Live findings from the walkthrough, logged room by room. Feeds directly into the 3-tier plan.</p>
+        </div>
+        <button class="btn ghost small" id="expInspect">Export CSV</button>
+      </div>
+
+      <div class="add-row">
+        <div class="fields inspection">
+          <div><label class="f">ROOM</label><input type="text" id="insRoom" placeholder="Primary Bedroom"></div>
+          <div><label class="f">ITEM</label><input type="text" id="insItem" placeholder="Nightstand"></div>
+          <div><label class="f">QTY</label><input type="number" id="insQty" placeholder="2"></div>
+          <div><label class="f">CONDITION</label>
+            <select id="insCond"><option>OK</option><option>Worn</option><option>Missing</option></select>
+          </div>
+          <div><label class="f">NOTES</label><input type="text" id="insNotes" placeholder="scuffed veneer, replace"></div>
+        </div>
+        <div class="actions"><button class="btn" onclick="addInspection()">Log finding</button></div>
+      </div>
+
+      <table id="inspectionTable">
+        <thead><tr><th>Room</th><th>Item</th><th>Qty</th><th>Condition</th><th>Notes</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- 3-TIER PLAN -->
+    <section id="tab-plan">
+      <div class="panel-head">
+        <div>
+          <h2>3-Tier Materials Plan</h2>
+          <p>Itemized owner plan, built from inspection findings and Peak Profit targets.</p>
+        </div>
+        <button class="btn ghost small" id="expPlan">Export CSV</button>
+      </div>
+
+      <div class="subtabs" id="tierSubtabs"></div>
+
+      <div class="tier-summary">
+        <span>Target budget for this tier: <strong class="mono" id="tierTarget">$0</strong></span>
+        <span>Planned spend: <strong class="mono" id="tierSpend">$0</strong></span>
+      </div>
+      <div class="budget-bar"><div class="budget-bar-fill" id="tierBarFill" style="width:0%"></div></div>
+
+      <div class="add-row" style="margin-top:18px;">
+        <div class="fields tier">
+          <div><label class="f">ITEM</label><input type="text" id="planItem" placeholder="Queen platform bed frame"></div>
+          <div><label class="f">QTY</label><input type="number" id="planQty" placeholder="1"></div>
+          <div><label class="f">UNIT COST</label><input type="number" id="planCost" placeholder="219"></div>
+          <div><label class="f">LINK</label><input type="url" id="planLink" placeholder="vendor URL"></div>
+        </div>
+        <div class="actions"><button class="btn" onclick="addPlanItem()">Add line item</button></div>
+      </div>
+
+      <table id="planTable">
+        <thead><tr><th>Item</th><th>Qty</th><th>Unit cost</th><th>Line total</th><th>Link</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- PROCUREMENT -->
+    <section id="tab-procurement">
+      <div class="panel-head">
+        <div>
+          <h2>Procurement &amp; Order Tracker</h2>
+          <p>Every order, tracked to the door. Delivery window target is set from the launch date above.</p>
+        </div>
+        <button class="btn ghost small" id="expOrders">Export CSV</button>
+      </div>
+
+      <div class="add-row">
+        <div class="fields order">
+          <div><label class="f">ITEM</label><input type="text" id="ordItem" placeholder="King mattress"></div>
+          <div><label class="f">VENDOR</label>
+            <select id="ordVendor"><option>Amazon</option><option>Wayfair</option><option>Other</option></select>
+          </div>
+          <div><label class="f">COST</label><input type="number" id="ordCost" placeholder="480"></div>
+          <div><label class="f">STATUS</label>
+            <select id="ordStatus"><option>Ordered</option><option>In transit</option><option>Delivered</option><option>Issue</option></select>
+          </div>
+          <div><label class="f">EST. DELIVERY</label><input type="date" id="ordDate"></div>
+        </div>
+        <div class="actions"><button class="btn" onclick="addOrder()">Log order</button></div>
+      </div>
+
+      <table id="orderTable">
+        <thead><tr><th>Item</th><th>Vendor</th><th>Cost</th><th>Status</th><th>Est. delivery</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section id="tab-portfolio">
+      <div class="panel-head">
+        <div>
+          <h2>Existing Portfolio Inspection Log</h2>
+          <p>Recurring condition checks on properties already under management. Gaps become new work items.</p>
+        </div>
+        <button class="btn ghost small" id="expPortfolio">Export CSV</button>
+      </div>
+
+      <div class="add-row">
+        <div class="fields portfolio">
+          <div><label class="f">PROPERTY</label><input type="text" id="pfProp" placeholder="118 Harbor Ln, Newport"></div>
+          <div><label class="f">LAST CHECK</label><input type="date" id="pfDate"></div>
+          <div><label class="f">STATUS</label>
+            <select id="pfStatus"><option>OK</option><option>Gap found</option><option>Action needed</option></select>
+          </div>
+          <div><label class="f">NOTE</label><input type="text" id="pfNote" placeholder="2 towel sets missing from par"></div>
+        </div>
+        <div class="actions"><button class="btn" onclick="addPortfolio()">Log check</button></div>
+      </div>
+
+      <table id="portfolioTable">
+        <thead><tr><th>Property</th><th>Last check</th><th>Status</th><th>Note</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+  </main>
+  <footer>In-memory demo data &middot; resets on reload &middot; built to mirror a real setup &amp; procurement workflow</footer>
+</div>
+
+<script>
+// ---------- state ----------
+const LAUNCH_DATE = new Date('2026-09-29');
+const TIERS = {
+  'Tier 1 — Essentials': { target: 3200, items: [
+    { item:'Queen platform bed frame x2', qty:2, cost:219, link:'wayfair.com/...' },
+    { item:'Mattress + protector set', qty:4, cost:310, link:'amazon.com/...' },
+    { item:'Towel + linen par (full house)', qty:1, cost:640, link:'amazon.com/...' },
+    { item:'Blackout curtains, 2 bedrooms', qty:2, cost:48, link:'amazon.com/...' },
+    { item:'Drip coffee maker', qty:1, cost:44, link:'amazon.com/...' },
+  ]},
+  'Tier 2 — Optimization': { target:1800, items:[
+    { item:'Smart lock + keypad', qty:1, cost:189, link:'amazon.com/...' },
+    { item:'Outdoor patio seating set', qty:1, cost:520, link:'wayfair.com/...' },
+    { item:'Noise monitor (common areas)', qty:1, cost:129, link:'amazon.com/...' },
+  ]},
+  'Tier 3 — Design': { target:2600, items:[
+    { item:'Living room accent lighting', qty:3, cost:95, link:'wayfair.com/...' },
+    { item:'Statement art, 3 rooms', qty:3, cost:140, link:'amazon.com/...' },
+    { item:'Outdoor string lighting, patio', qty:1, cost:65, link:'amazon.com/...' },
+  ]}
+};
+let currentTier = Object.keys(TIERS)[0];
+
+const inspectionRows = [
+  { room:'Primary Bedroom', item:'Nightstand', qty:2, cond:'Worn', notes:'scuffed veneer, replace before photos' },
+  { room:'Primary Bedroom', item:'Blackout curtains', qty:1, cond:'Missing', notes:'windows bare, guests will flag this' },
+  { room:'Kitchen', item:'Coffee maker', qty:1, cond:'Missing', notes:'not on site, needs sourcing, drip + Keurig-style requested' },
+  { room:'Kitchen', item:'Dining table + 6 chairs', qty:1, cond:'OK', notes:'seats full listed capacity, no repairs needed' },
+  { room:'Living Room', item:'Sofa', qty:1, cond:'OK', notes:'clean, good condition, matches listing photos' },
+  { room:'Living Room', item:'Smart TV', qty:1, cond:'Worn', notes:'55" works but remote missing, replace remote only' },
+  { room:'Bathroom 2', item:'Bath mat + shower curtain', qty:1, cond:'Missing', notes:'unit currently has none, safety issue' },
+  { room:'Garage / Storage', item:'Extra linens bin', qty:1, cond:'OK', notes:'stocked to par, labeled correctly' },
+];
+
+const orderRows = [
+  { item:'King mattress', vendor:'Amazon', cost:480, status:'Delivered', date:'2026-09-18' },
+  { item:'Blackout curtain panels (2 rooms)', vendor:'Amazon', cost:96, status:'Delivered', date:'2026-09-20' },
+  { item:'Patio dining set', vendor:'Wayfair', cost:520, status:'In transit', date:'2026-09-27' },
+  { item:'Drip coffee maker', vendor:'Amazon', cost:44, status:'In transit', date:'2026-09-26' },
+  { item:'Smart lock', vendor:'Amazon', cost:189, status:'Ordered', date:'2026-10-02' },
+  { item:'Bath mat + shower curtain set', vendor:'Wayfair', cost:38, status:'Issue', date:'2026-09-19' },
+  { item:'TV remote replacement', vendor:'Other', cost:19, status:'Ordered', date:'2026-09-25' },
+];
+
+const portfolioRows = [
+  { prop:'118 Harbor Ln, Newport', date:'2026-08-30', status:'Gap found', note:'2 towel sets missing from par' },
+  { prop:'55 Timberline Ct, Bend', date:'2026-09-02', status:'OK', note:'full par confirmed, no action needed' },
+  { prop:'902 Alpine Way, Sisters', date:'2026-08-25', status:'Action needed', note:'dishwasher not draining, vendor ticket opened' },
+  { prop:'27 Marina Dr, Depoe Bay', date:'2026-09-05', status:'OK', note:'inventory and condition match setup baseline' },
+];
+
+// ---------- tabs ----------
+const tabDefs = [
+  { id:'inspection', label:'Inspection' },
+  { id:'plan', label:'3-Tier Plan' },
+  { id:'procurement', label:'Procurement' },
+  { id:'portfolio', label:'Portfolio Log' },
+];
+const tabNav = document.getElementById('tabNav');
+tabDefs.forEach((t,i)=>{
+  const b = document.createElement('button');
+  b.textContent = t.label;
+  b.className = i===0 ? 'active' : '';
+  b.onclick = ()=> switchTab(t.id);
+  b.dataset.tab = t.id;
+  tabNav.appendChild(b);
+});
+function switchTab(id){
+  document.querySelectorAll('#tabNav button').forEach(b=> b.classList.toggle('active', b.dataset.tab===id));
+  document.querySelectorAll('main.panel section').forEach(s=> s.classList.toggle('active', s.id==='tab-'+id));
+}
+switchTab('inspection');
+
+// ---------- helpers ----------
+const fmt$ = n => '$' + n.toLocaleString(undefined,{maximumFractionDigits:0});
+function condTag(c){
+  const cls = c==='OK' ? 'ok' : c==='Worn' ? 'worn' : 'missing';
+  return `<span class="tag ${cls}">${c}</span>`;
+}
+function statusTag(s){
+  const map = {'Ordered':'ordered','In transit':'transit','Delivered':'delivered','Issue':'issue'};
+  return `<span class="tag ${map[s]||'ordered'}">${s}</span>`;
+}
+function pfTag(s){
+  const map = {'OK':'ok','Gap found':'worn','Action needed':'missing'};
+  return `<span class="tag ${map[s]||'ok'}">${s}</span>`;
+}
+function toCSV(rows, headers){
+  const lines = [headers.join(',')];
+  rows.forEach(r=> lines.push(headers.map(h=> `"${(r[h]??'').toString().replace(/"/g,'""')}"`).join(',')));
+  return lines.join('\n');
+}
+function downloadCSV(filename, rows, headers){
+  const blob = new Blob([toCSV(rows, headers)], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---------- render: inspection ----------
+function renderInspection(){
+  const tbody = document.querySelector('#inspectionTable tbody');
+  tbody.innerHTML = '';
+  if(!inspectionRows.length){
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty">No findings logged yet.</div></td></tr>`;
+    return;
+  }
+  inspectionRows.forEach((r,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.room}</td><td>${r.item}</td><td class="mono">${r.qty}</td><td>${condTag(r.cond)}</td><td>${r.notes||''}</td>
+      <td><button class="icon-btn" onclick="delRow(inspectionRows,${i},renderInspection)">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function addInspection(){
+  const room = document.getElementById('insRoom').value.trim();
+  const item = document.getElementById('insItem').value.trim();
+  if(!room || !item) return;
+  inspectionRows.push({
+    room, item,
+    qty: Number(document.getElementById('insQty').value)||1,
+    cond: document.getElementById('insCond').value,
+    notes: document.getElementById('insNotes').value.trim(),
+  });
+  ['insRoom','insItem','insQty','insNotes'].forEach(id=> document.getElementById(id).value='');
+  renderInspection(); renderStats();
+}
+
+// ---------- render: plan ----------
+const subtabWrap = document.getElementById('tierSubtabs');
+Object.keys(TIERS).forEach((name,i)=>{
+  const b = document.createElement('button');
+  b.textContent = name;
+  b.className = i===0 ? 'active':'';
+  b.onclick = ()=>{ currentTier = name;
+    document.querySelectorAll('#tierSubtabs button').forEach(x=> x.classList.toggle('active', x.textContent===name));
+    renderPlan();
+  };
+  subtabWrap.appendChild(b);
+});
+function renderPlan(){
+  const tier = TIERS[currentTier];
+  const tbody = document.querySelector('#planTable tbody');
+  tbody.innerHTML = '';
+  let spend = 0;
+  if(!tier.items.length){
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty">No line items in this tier yet.</div></td></tr>`;
+  }
+  tier.items.forEach((it,i)=>{
+    const total = it.qty * it.cost;
+    spend += total;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${it.item}</td><td class="mono">${it.qty}</td><td class="mono">${fmt$(it.cost)}</td><td class="mono">${fmt$(total)}</td>
+      <td class="mono" style="color:var(--muted)">${it.link||'—'}</td>
+      <td><button class="icon-btn" onclick="delRow(TIERS['${currentTier}'].items,${i},renderPlan)">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('tierTarget').textContent = fmt$(tier.target);
+  document.getElementById('tierSpend').textContent = fmt$(spend);
+  const pct = Math.min(100, Math.round((spend/tier.target)*100));
+  const fill = document.getElementById('tierBarFill');
+  fill.style.width = pct + '%';
+  fill.classList.toggle('over', spend > tier.target);
+  renderStats();
+}
+function addPlanItem(){
+  const item = document.getElementById('planItem').value.trim();
+  if(!item) return;
+  TIERS[currentTier].items.push({
+    item,
+    qty: Number(document.getElementById('planQty').value)||1,
+    cost: Number(document.getElementById('planCost').value)||0,
+    link: document.getElementById('planLink').value.trim(),
+  });
+  ['planItem','planQty','planCost','planLink'].forEach(id=> document.getElementById(id).value='');
+  renderPlan();
+}
+
+// ---------- render: orders ----------
+function daysUntil(dateStr){
+  const d = new Date(dateStr);
+  return Math.ceil((d - new Date()) / 86400000);
+}
+function renderOrders(){
+  const tbody = document.querySelector('#orderTable tbody');
+  tbody.innerHTML = '';
+  if(!orderRows.length){
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty">No orders logged yet.</div></td></tr>`;
+    return;
+  }
+  orderRows.forEach((o,i)=>{
+    const late = new Date(o.date) > LAUNCH_DATE && o.status !== 'Delivered';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${o.item}</td><td>${o.vendor}</td><td class="mono">${fmt$(o.cost)}</td><td>${statusTag(o.status)}</td>
+      <td class="mono" style="${late?'color:var(--red);font-weight:600;':''}">${o.date}${late?' ⚠ after launch':''}</td>
+      <td><button class="icon-btn" onclick="delRow(orderRows,${i},renderOrders)">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  renderStats();
+}
+function addOrder(){
+  const item = document.getElementById('ordItem').value.trim();
+  const date = document.getElementById('ordDate').value;
+  if(!item || !date) return;
+  orderRows.push({
+    item, vendor: document.getElementById('ordVendor').value,
+    cost: Number(document.getElementById('ordCost').value)||0,
+    status: document.getElementById('ordStatus').value, date,
+  });
+  ['ordItem','ordCost','ordDate'].forEach(id=> document.getElementById(id).value='');
+  renderOrders();
+}
+
+// ---------- render: portfolio ----------
+function renderPortfolio(){
+  const tbody = document.querySelector('#portfolioTable tbody');
+  tbody.innerHTML = '';
+  if(!portfolioRows.length){
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty">No portfolio checks logged yet.</div></td></tr>`;
+    return;
+  }
+  portfolioRows.forEach((p,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.prop}</td><td class="mono">${p.date}</td><td>${pfTag(p.status)}</td><td>${p.note||''}</td>
+      <td><button class="icon-btn" onclick="delRow(portfolioRows,${i},renderPortfolio)">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  renderStats();
+}
+function addPortfolio(){
+  const prop = document.getElementById('pfProp').value.trim();
+  const date = document.getElementById('pfDate').value;
+  if(!prop || !date) return;
+  portfolioRows.push({
+    prop, date, status: document.getElementById('pfStatus').value,
+    note: document.getElementById('pfNote').value.trim(),
+  });
+  ['pfProp','pfDate','pfNote'].forEach(id=> document.getElementById(id).value='');
+  renderPortfolio();
+}
+
+// ---------- shared ----------
+function delRow(arr, i, rerender){ arr.splice(i,1); rerender(); }
+
+function renderStats(){
+  const days = Math.ceil((LAUNCH_DATE - new Date())/86400000);
+  document.getElementById('statDays').textContent = days;
+  document.getElementById('launchPill').textContent = `Launch ${LAUNCH_DATE.toISOString().slice(0,10)} · ${days} days out`;
+
+  let totalTarget = 0, totalSpend = 0;
+  Object.values(TIERS).forEach(t=>{
+    totalTarget += t.target;
+    t.items.forEach(it=> totalSpend += it.qty*it.cost);
+  });
+  document.getElementById('statBudget').textContent = Math.round((totalSpend/totalTarget)*100) + '%';
+
+  const delivered = orderRows.filter(o=> o.status==='Delivered').length;
+  document.getElementById('statDelivered').textContent = `${delivered}/${orderRows.length}`;
+
+  const flags = portfolioRows.filter(p=> p.status !== 'OK').length;
+  document.getElementById('statFlags').textContent = flags;
+}
+
+// ---------- exports ----------
+document.getElementById('expInspect').onclick = ()=> downloadCSV('inspection.csv', inspectionRows, ['room','item','qty','cond','notes']);
+document.getElementById('expPlan').onclick = ()=> downloadCSV('plan_'+currentTier.replace(/[^a-z0-9]/gi,'_')+'.csv', TIERS[currentTier].items, ['item','qty','cost','link']);
+document.getElementById('expOrders').onclick = ()=> downloadCSV('procurement.csv', orderRows, ['item','vendor','cost','status','date']);
+document.getElementById('expPortfolio').onclick = ()=> downloadCSV('portfolio_log.csv', portfolioRows, ['prop','date','status','note']);
+
+// ---------- init ----------
+renderInspection();
+renderPlan();
+renderOrders();
+renderPortfolio();
+</script>
+</body>
+</html>
